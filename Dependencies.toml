@@ -270,7 +270,7 @@ modules = [
 ]
 
 [[package]]
-org = "torben"
+org = "tim-hat-die-hand-an-der-maus"
 name = "thumbnail_updater"
 version = "0.1.0"
 dependencies = [
@@ -279,7 +279,7 @@ dependencies = [
 	{org = "ballerinai", name = "observe"}
 ]
 modules = [
-	{org = "torben", packageName = "thumbnail_updater", moduleName = "thumbnail_updater"}
+	{org = "tim-hat-die-hand-an-der-maus", packageName = "thumbnail_updater", moduleName = "thumbnail_updater"}
 ]
 
 
