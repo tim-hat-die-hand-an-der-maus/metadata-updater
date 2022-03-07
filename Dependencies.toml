@@ -270,8 +270,8 @@ modules = [
 ]
 
 [[package]]
-org = "tim-hat-die-hand-an-der-maus"
-name = "thumbnail_updater"
+org = "timhatdiehandandermaus"
+name = "metadata_updater"
 version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "http"},
@@ -279,7 +279,7 @@ dependencies = [
 	{org = "ballerinai", name = "observe"}
 ]
 modules = [
-	{org = "tim-hat-die-hand-an-der-maus", packageName = "thumbnail_updater", moduleName = "thumbnail_updater"}
+	{org = "timhatdiehandandermaus", packageName = "metadata_updater", moduleName = "metadata_updater"}
 ]
 
 
