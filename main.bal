@@ -1,5 +1,6 @@
 import ballerina/http;
 import ballerina/io;
+import ballerina/os;
 
 type QueueItem record {
     string id;
@@ -80,8 +81,8 @@ function updateMovie([Movie, string[]] input) returns json|error {
 }
 
 function resolveMovieId(string id) returns Imdb|error {
-    //  final http:Client client = check new("http://plex");
-    final http:Client c = check new("http://127.0.0.1:8081");
+    string url = os:getEnv("IMDB_RESOLVER_URL");
+    final http:Client c = check new(url);
     // exploit that the imdb-resolver is using `match = re.search(".*tt(\d+)", req.imdbUrl)`
     ImdbResolverRequest req = { imdbUrl: "https://www.imdb.com/title/tt" + id };
 
