@@ -17,4 +17,4 @@ cronjob:
 
 configmap:
   name: metadata-updater-config
-  imdbResolverUrl: "http://plex"
+  imdbResolverUrl: "http://imdb-resolver"
