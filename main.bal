@@ -9,12 +9,17 @@ type Queue record {
     QueueItem[] queue;
 };
 
+type Cover record {
+    string url;
+    float ratio;
+};
+
 type Imdb record {
     string id;
     string title;
     int year;
     string rating;
-    string coverUrl;
+    Cover cover;
 };
 
 type Movie record {
@@ -23,18 +28,36 @@ type Movie record {
     Imdb imdb;
 };
 
-type ImdbMovie record {
-    string id;
-    string title;
-    int year;
-    string rating;
-    string coverUrl;
+type ImdbResolverRequest record {
+    string imdbUrl;
 };
+
+type MetadataPatchRequest record {
+    string[] refresh;
+};
+
+function diffRecordFields(Imdb r1, Imdb r2) returns string[] {
+    map<anydata> m1 = r1;
+    map<anydata> m2 = r2;
+
+    string[] diff = [];
+    foreach var k in m1.keys() {
+        string key = k;
+        if m1[k] != m2[k] {
+            if k == "cover" {
+                key = "coverUrl";
+            }
+            diff.push(key);
+        }
+    }
+
+    return diff;
+}
 
 function getMovieById(string id, http:Client apiClient) returns Movie? {
     Movie|error movie = apiClient->get("/movie/" + id);
     if movie is error {
-        io:println("error retrieving movie by id: " + id);
+        io:println("error retrieving movie by id: " + id + " due to " + movie.toString());
         return ();
     }
 
@@ -42,17 +65,33 @@ function getMovieById(string id, http:Client apiClient) returns Movie? {
 }
 
 function getUrl(string url) returns string|error {
-    final http:Client c = check new (url);
+    final http:Client c = check new (url, { timeout: 2 });
 
     return c->get("/", targetType = string);
 }
 
-function updateMovie(Movie movie) returns error? {
-    // TODO: see https://github.com/tim-hat-die-hand-an-der-maus/api/issues/31
+function updateMovie([Movie, string[]] input) returns json|error {
+    var [movie, diffKeys] = input;
+
+    final http:Client c = check new("https://api.timhatdiehandandermaus.consulting");
+    MetadataPatchRequest req = { refresh: diffKeys };
+
+    return c->patch("/movie/" + movie.id + "/metadata" , req.toJsonString(), { "Content-Type": "application/json"});
+}
+
+function resolveMovieId(string id) returns Imdb|error {
+    //  final http:Client client = check new("http://plex");
+    final http:Client c = check new("http://127.0.0.1:8081");
+    // exploit that the imdb-resolver is using `match = re.search(".*tt(\d+)", req.imdbUrl)`
+    ImdbResolverRequest req = { imdbUrl: "https://www.imdb.com/title/tt" + id };
+
+    Imdb|error imdb = check c->post("/", req.toJsonString(), {"Content-Type": "application/json"});
+
+    return imdb;
 }
 
 public function main() returns error? {
-    final http:Client apiClient = check new ("https://api.timhatdiehandandermaus.consulting");
+    final http:Client apiClient = check new ("https://api.timhatdiehandandermaus.consulting", { timeout: 2 });
     Queue queue = check apiClient->get("/queue");
     Movie?[] rawMovies = queue.queue.map(item => getMovieById(item.id, apiClient));
     Movie[] movies = [];
@@ -61,14 +100,27 @@ public function main() returns error? {
             movies.push(movie);
         }
     }
-    
-    (string|error)[] thumbnailUrlResults = movies.map(movie => getUrl(movie.imdb.coverUrl));
-    Movie[] missingThumbnailUrls = [];
+
+    (string|error)[] thumbnailUrlResults = movies.map(movie => getUrl(movie.imdb.cover.url));
     foreach int i in 0 ..< thumbnailUrlResults.length() {
         if thumbnailUrlResults[i] is error {
-            missingThumbnailUrls.push(movies[i]);
+            movies[i].imdb.cover.url = "";
         }
     }
 
-    _ = missingThumbnailUrls.'map(updateMovie);
+    [Movie, string[]][] diff = [];
+    foreach Movie m in movies {
+        Imdb|error Imdb = resolveMovieId(m.imdb.id);
+        if Imdb is error {
+            io:println("unable to resolve " + m.imdb.id + " due to " + Imdb.toString());
+            continue;
+        }
+
+        string[] diffKeys = diffRecordFields(m.imdb, Imdb);
+        if diffKeys.length() > 0 {
+           diff.push([m, diffKeys]);
+        }
+    }
+
+    io:println(diff.'map(updateMovie));
 }
