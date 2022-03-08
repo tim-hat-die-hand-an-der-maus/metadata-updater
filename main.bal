@@ -43,12 +43,8 @@ function diffRecordFields(Imdb r1, Imdb r2) returns string[] {
 
     string[] diff = [];
     foreach var k in m1.keys() {
-        string key = k;
         if m1[k] != m2[k] {
-            if k == "cover" {
-                key = "coverUrl";
-            }
-            diff.push(key);
+            diff.push(k);
         }
     }
 
