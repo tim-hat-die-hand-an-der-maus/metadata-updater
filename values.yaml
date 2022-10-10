@@ -3,7 +3,7 @@ namespace: timhatdiehandandermaus
 cronjob:
   name: metadata-updater
   image: ghcr.io/tim-hat-die-hand-an-der-maus/metadata-updater:__TAG__
-  imagePullPolicy: Always
+  imagePullPolicy: IfNotPresent
   schedule: "CRON_TZ=UTC */20 * * * *"
   backoffLimit: 0
   successfulJobsHistoryLimit: 1
