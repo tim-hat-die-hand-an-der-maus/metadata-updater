@@ -1,5 +1,5 @@
 {
   "extends": [
-    "config:base"
+    "github>tim-hat-die-hand-an-der-maus/renovate-config"
   ]
 }
