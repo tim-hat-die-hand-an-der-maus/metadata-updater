@@ -4,7 +4,7 @@ cronjob:
   name: metadata-updater
   image: ghcr.io/tim-hat-die-hand-an-der-maus/metadata-updater:__TAG__
   imagePullPolicy: IfNotPresent
-  schedule: "CRON_TZ=UTC */20 * * * *"
+  schedule: "*/20 * * * *"
   backoffLimit: 0
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
