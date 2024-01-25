@@ -1,4 +1,4 @@
-FROM eclipse-temurin:20.0.2_9-jre-jammy
+FROM eclipse-temurin:21.0.2_13-jre-jammy
 
 WORKDIR /usr/app
 
